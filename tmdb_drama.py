@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-# TMDb APIキー（スミレさんのを入れてね）
+# TMDb APIキー
 API_KEY = "054399b3517551d518e2aac834aa311a"
 API_URL = "https://api.themoviedb.org/3/discover/tv"
 IMG_URL = "https://image.tmdb.org/t/p/w500"
@@ -24,6 +24,37 @@ sort_options = {
     "新しい順": "first_air_date.desc",
     "古い順": "first_air_date.asc"
 }
+
+st.title("ドラマ キーワード検索")
+
+# キーワード入力欄
+query = st.text_input("作品名やキーワードを入力", "")
+
+if query:
+    url = f"https://api.themoviedb.org/3/search/tv"
+    params = {
+        "api_key": API_KEY,
+        "language": "ja",
+        "query": query
+    }
+    response = requests.get(url, params=params).json()
+    results = response.get("results", [])
+
+    if results:
+        st.subheader("検索結果")
+        for item in results:
+            title = item.get("name", "タイトル不明")
+            overview = item.get("overview", "あらすじなし")
+            poster_path = item.get("poster_path")
+
+            if poster_path:
+                image_url = f"https://image.tmdb.org/t/p/w300{poster_path}"
+                st.image(image_url, use_container_width=True)
+            st.markdown(f"### {title}")
+            with st.expander("あらすじ"):
+                st.write(overview)
+    else:
+        st.warning("該当する作品が見つかりませんでした。")
 
 # サイドバーで選択
 st.sidebar.title(" 条件を選ぶ")
